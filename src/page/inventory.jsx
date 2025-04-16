@@ -19,9 +19,9 @@ const Inventory = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [productIdToEdit, setProductIdToEdit] = useState(null);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
-
+  const apiUrl = process.env.REACT_APP_API_URL;
   useEffect(() => {
-    fetch('http://localhost:5000/inventory')
+    fetch(apiUrl + 'inventory')
       .then(response => response.json())
       .then(data => {
         setProducts(data);
@@ -47,7 +47,7 @@ const Inventory = () => {
       // Update existing product
       const updatedQuantity = parseInt(existingProduct.quantity) + parseInt(quantity);
 
-      fetch(`http://localhost:5000/inventory/${existingProduct._id}`, {
+      fetch(apiUrl + `inventory/${existingProduct._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ const Inventory = () => {
         .catch(error => console.error('Error updating product:', error));
     } else if (isEditing) {
       // Edit existing product
-      fetch(`http://localhost:5000/inventory/${productIdToEdit}`, {
+      fetch(apiUrl + `inventory/${productIdToEdit}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const Inventory = () => {
         .catch(error => console.error('Error editing product:', error));
     } else {
       // Add new product
-      fetch('http://localhost:5000/inventory', {
+      fetch(apiUrl + 'inventory', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ const Inventory = () => {
   };
 
   const confirmDeleteProduct = () => {
-    fetch(`http://localhost:5000/inventory/${productIdToDelete}`, {
+    fetch(apiUrl + `inventory/${productIdToDelete}`, {
       method: 'DELETE',
     })
       .then(() => {
@@ -139,7 +139,7 @@ const Inventory = () => {
   };
 
   const confirmEditProduct = (updatedProduct) => {
-    fetch(`http://localhost:5000/inventory/${productIdToEdit}`, {
+    fetch(apiUrl + `inventory/${productIdToEdit}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

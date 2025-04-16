@@ -8,16 +8,16 @@ const SalesPage = () => {
   const [price, setPrice] = useState(0);
   const [inventory, setInventory] = useState([]);
   const [error, setError] = useState('');
-
+  const apiUrl = process.env.REACT_APP_API_URL;
   useEffect(() => {
     // Fetch inventory data
-    fetch('http://localhost:5000/inventory')
+    fetch(apiUrl + 'inventory')
       .then(response => response.json())
       .then(data => setInventory(data))
       .catch(error => console.error('Error fetching inventory:', error));
 
     // Fetch sales data
-    fetch('http://localhost:5000/sales')
+    fetch(apiUrl + 'sales')
       .then(response => response.json())
       .then(data => setSales(data))
       .catch(error => console.error('Error fetching sales:', error));
@@ -53,7 +53,7 @@ const SalesPage = () => {
     const newSale = { itemId: productInInventory._id, quantity, price };
 
     // Add sale to the sales model on the server
-    fetch('http://localhost:5000/sales', {
+    fetch(apiUrl + 'sales', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -81,7 +81,7 @@ const SalesPage = () => {
     setInventory(updatedInventory);
 
     // Optionally, update the inventory on the server
-    fetch(`http://localhost:5000/inventory/${productInInventory._id}`, {
+    fetch(apiUrl + `inventory/${productInInventory._id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
