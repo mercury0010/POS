@@ -1,5 +1,6 @@
-const mongoose = require('mongoose');
+require('dotenv').config();  // Make sure this line is at the top of your file
 
+const mongoose = require('mongoose');
 const uri = process.env.MONGODB_URI;
 const clientOptions = { 
   useNewUrlParser: true, 
@@ -18,4 +19,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB; 
+module.exports = connectDB;
