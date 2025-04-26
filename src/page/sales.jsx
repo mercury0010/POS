@@ -8,7 +8,7 @@ const SalesPage = () => {
   const [price, setPrice] = useState(0);
   const [inventory, setInventory] = useState([]);
   const [error, setError] = useState('');
-  const apiUrl = process.env.REACT_APP_API_URL;
+  const apiUrl = 'http://13.239.40.220:5000/';
   useEffect(() => {
     // Fetch inventory data
     fetch(apiUrl + 'inventory')

@@ -19,7 +19,7 @@ const Inventory = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [productIdToEdit, setProductIdToEdit] = useState(null);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
-  const apiUrl = process.env.REACT_APP_API_URL;
+  const apiUrl = 'http://13.239.40.220:5000/';
   useEffect(() => {
     fetch(apiUrl + 'inventory')
       .then(response => response.json())
