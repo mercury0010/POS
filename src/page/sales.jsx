@@ -9,6 +9,7 @@ const SalesPage = () => {
   const [inventory, setInventory] = useState([]);
   const [error, setError] = useState('');
   const apiUrl = 'http://13.239.40.220:5000/';
+  
   useEffect(() => {
     // Fetch inventory data
     fetch(apiUrl + 'inventory')
@@ -148,7 +149,7 @@ const SalesPage = () => {
           <tbody>
             {sales.map((sale, index) => (
               <tr key={index}>
-                <td>{sale.item.name}</td>
+                <td>{sale.item ? sale.item.name : ''}</td>
                 <td>{sale.quantity}</td>
                 <td>PHP {sale.price}.00</td>
                 <td>{new Date(sale.date).toLocaleDateString()}</td>
