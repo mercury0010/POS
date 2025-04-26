@@ -12,7 +12,7 @@ connectDB();
 
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'http://13.239.40.220:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
