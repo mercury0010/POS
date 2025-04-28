@@ -154,7 +154,7 @@ const SalesPage = () => {
             <option value="">Select a customer</option>
             {customers.map((cust) => (
               <option key={cust._id} value={cust._id}>
-                {cust.name}
+                {cust.firstName} {cust.lastName}
               </option>
             ))}
           </select>
