@@ -12,6 +12,9 @@ const Dashboard = () => {
     if (card === 'Sales') {
       navigate('/sales');
     }
+    if (card === 'Customer') {
+      navigate('/customer');
+    }
     // Add other navigation logic if needed
   };
 
@@ -21,7 +24,7 @@ const Dashboard = () => {
       <div className="dashboard-content">
         <div className="card" onClick={() => handleCardClick('Sales')}>Sales</div>
         <div className="card" onClick={() => handleCardClick('Inventory')}>Inventory</div>
-        <div className="card" onClick={() => handleCardClick('Reports')}>Reports</div>
+        <div className="card" onClick={() => handleCardClick('Customer')}>Customer</div>
         <div className="card" onClick={() => handleCardClick('Settings')}>Settings</div>
       </div>
     </div>

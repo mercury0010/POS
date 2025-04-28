@@ -5,6 +5,7 @@ const { getAccountsHandler, createAccountHandler } = require('./services/account
 const { getInventoryHandler, addInventoryHandler, deleteInventoryHandler, updateInventoryHandler } = require('./services/inventoryService');
 const { loginHandler } = require('./services/authService');
 const { addSaleHandler, getSalesHandler } = require('./services/salesService');
+const { getCustomerHandler, addCustomerHandler, updateCustomerHandler, deleteCustomerHandler } = require('./services/customerService');
 const cors = require('cors');
 const app = express();
 
@@ -31,6 +32,10 @@ app.delete('/inventory/:id', deleteInventoryHandler);
 app.put('/inventory/:id', updateInventoryHandler);
 app.post('/sales', addSaleHandler);
 app.get('/sales', getSalesHandler);
+app.get('/customers', getCustomerHandler);
+app.post('/customers', addCustomerHandler);
+app.put('/customers/:id', updateCustomerHandler);
+app.delete('/customers/:id', deleteCustomerHandler);
 
 // Catch-all route to serve React app for all other routes
 app.get('*', (req, res) => {
