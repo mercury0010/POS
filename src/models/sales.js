@@ -6,6 +6,11 @@ const salesSchema = new mongoose.Schema({
     ref: 'Inventory',
     required: true
   },
+  customer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Customer',
+    required: true
+  },
   quantity: {
     type: Number,
     required: true

@@ -6,7 +6,9 @@ const SalesPage = () => {
   const [product, setProduct] = useState('');
   const [quantity, setQuantity] = useState(0);
   const [price, setPrice] = useState(0);
+  const [customer, setCustomer] = useState('');
   const [inventory, setInventory] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [error, setError] = useState('');
   const apiUrl = 'http://13.239.40.220:5000/';
   
@@ -22,6 +24,12 @@ const SalesPage = () => {
       .then(response => response.json())
       .then(data => setSales(data))
       .catch(error => console.error('Error fetching sales:', error));
+
+    // Fetch customers data
+    fetch(apiUrl + 'customers')
+      .then(response => response.json())
+      .then(data => setCustomers(data))
+      .catch(error => console.error('Error fetching customers:', error));
   }, []);
 
   const handleProductChange = (e) => {
@@ -38,6 +46,10 @@ const SalesPage = () => {
     }
   };
 
+  const handleCustomerChange = (e) => {
+    setCustomer(e.target.value);
+  };
+
   const handleAddSale = () => {
     const productInInventory = inventory.find(item => item._id === product);
 
@@ -51,7 +63,7 @@ const SalesPage = () => {
       return;
     }
 
-    const newSale = { itemId: productInInventory._id, quantity, price };
+    const newSale = { itemId: productInInventory._id, quantity, price, customer };
 
     // Add sale to the sales model on the server
     fetch(apiUrl + 'sales', {
@@ -68,6 +80,7 @@ const SalesPage = () => {
         setProduct('');
         setQuantity(0);
         setPrice(0);
+        setCustomer('');
         setError('');
       })
       .catch(error => console.error('Error adding sale:', error));
@@ -132,6 +145,20 @@ const SalesPage = () => {
             onChange={(e) => setPrice(Number(e.target.value))}
           />
         </label>
+        <label>
+          Customer:
+          <select
+            value={customer}
+            onChange={handleCustomerChange}
+          >
+            <option value="">Select a customer</option>
+            {customers.map((cust) => (
+              <option key={cust._id} value={cust._id}>
+                {cust.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <button onClick={handleAddSale}>Add Sale</button>
         {error && <p className="error-message">{error}</p>}
       </div>
@@ -143,6 +170,7 @@ const SalesPage = () => {
               <th>Product</th>
               <th>Quantity</th>
               <th>Price</th>
+              <th>Customer</th>
               <th>Date</th>
             </tr>
           </thead>
@@ -152,6 +180,7 @@ const SalesPage = () => {
                 <td>{sale.item ? sale.item.name : ''}</td>
                 <td>{sale.quantity}</td>
                 <td>PHP {sale.price}.00</td>
+                <td>{sale.customer}</td>
                 <td>{new Date(sale.date).toLocaleDateString()}</td>
               </tr>
             ))}
