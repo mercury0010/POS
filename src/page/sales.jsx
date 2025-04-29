@@ -6,10 +6,12 @@ const SalesPage = () => {
   const [product, setProduct] = useState('');
   const [quantity, setQuantity] = useState(0);
   const [price, setPrice] = useState(0);
+  const [discount, setDiscount] = useState(0);
   const [customer, setCustomer] = useState('');
   const [inventory, setInventory] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [error, setError] = useState('');
+  const [tempSales, setTempSales] = useState([]);
   const apiUrl = 'http://13.239.40.220:5000/';
   
   useEffect(() => {
@@ -50,7 +52,7 @@ const SalesPage = () => {
     setCustomer(e.target.value);
   };
 
-  const handleAddSale = () => {
+  const handleAddTempSale = () => {
     const productInInventory = inventory.find(item => item._id === product);
 
     if (!productInInventory) {
@@ -63,124 +65,186 @@ const SalesPage = () => {
       return;
     }
 
-    const newSale = { itemId: productInInventory._id, quantity, price, customer };
+    const subTotal = (price - discount) * quantity;
+    const newTempSale = { itemId: productInInventory._id, quantity, price, discount, subTotal, customer };
+    setTempSales([...tempSales, newTempSale]);
+    setProduct('');
+    setQuantity(0);
+    setPrice(0);
+    setDiscount(0);
+    setCustomer('');
+    setError('');
+  };
 
-    // Add sale to the sales model on the server
-    fetch(apiUrl + 'sales', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newSale),
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Sale added:', data);
-        setSales([...sales, data]);
-        setProduct('');
-        setQuantity(0);
-        setPrice(0);
-        setCustomer('');
-        setError('');
+  const handleAddSale = () => {
+    tempSales.forEach(tempSale => {
+      const productInInventory = inventory.find(item => item._id === tempSale.itemId);
+
+      if (!productInInventory) {
+        setError('Product not found in inventory.');
+        return;
+      }
+
+      if (productInInventory.quantity < tempSale.quantity) {
+        setError('Insufficient quantity in inventory.');
+        return;
+      }
+
+      // Add sale to the sales model on the server
+      fetch(apiUrl + 'sales', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tempSale),
       })
-      .catch(error => console.error('Error adding sale:', error));
+        .then(response => response.json())
+        .then(data => {
+          console.log('Sale added:', data);
+          setSales([...sales, data]);
+        })
+        .catch(error => console.error('Error adding sale:', error));
 
-    // Update inventory
-    const updatedInventory = inventory.map(item =>
-      item._id === product
-        ? { ...item, quantity: item.quantity - quantity }
-        : item
-    );
+      // Update inventory
+      const updatedInventory = inventory.map(item =>
+        item._id === tempSale.itemId
+          ? { ...item, quantity: item.quantity - tempSale.quantity }
+          : item
+      );
 
-    setInventory(updatedInventory);
+      setInventory(updatedInventory);
 
-    // Optionally, update the inventory on the server
-    fetch(apiUrl + `inventory/${productInInventory._id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...productInInventory,
-        quantity: productInInventory.quantity - quantity,
-      }),
-    })
-      .then(response => response.json())
-      .catch(error => console.error('Error updating inventory:', error));
+      // Optionally, update the inventory on the server
+      fetch(apiUrl + `inventory/${productInInventory._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...productInInventory,
+          quantity: productInInventory.quantity - tempSale.quantity,
+        }),
+      })
+        .then(response => response.json())
+        .catch(error => console.error('Error updating inventory:', error));
+    });
+
+    setTempSales([]);
   };
 
   return (
     <div className="sales-page">
       <h1>Sales Page</h1>
-      <div className="sales-form">
-        <label>
-          Product:
-          <select
-            value={product}
-            onChange={handleProductChange}
-          >
-            <option value="">Select a product</option>
-            {inventory.map((item) => (
-              <option key={item._id} value={item._id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Quantity:
-          <input
-            type="number"
-            placeholder="Quantity"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          Price:
-          <input
-            type="number"
-            placeholder="Price"
-            value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          Customer:
-          <select
-            value={customer}
-            onChange={handleCustomerChange}
-          >
-            <option value="">Select a customer</option>
-            {customers.map((cust) => (
-              <option key={cust._id} value={cust._id}>
-                {cust.firstName} {cust.lastName}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button onClick={handleAddSale}>Add Sale</button>
-        {error && <p className="error-message">{error}</p>}
+      <div className="sales-container">
+        <div className="sales-form-temp-sales">
+          <div className="sales-form">
+            <label>
+              Customer:
+              <select
+                value={customer}
+                onChange={handleCustomerChange}
+              >
+                <option value="">Select a customer</option>
+                {customers.map((cust) => (
+                  <option key={cust._id} value={cust._id}>
+                    {cust.firstName} {cust.lastName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Product:
+              <select
+                value={product}
+                onChange={handleProductChange}
+              >
+                <option value="">Select a product</option>
+                {inventory.map((item) => (
+                  <option key={item._id} value={item._id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Quantity:
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              Price:
+              <input
+                type="number"
+                placeholder="Price"
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              Discount:
+              <input
+                type="number"
+                placeholder="Discount"
+                value={discount}
+                onChange={(e) => setDiscount(Number(e.target.value))}
+              />
+            </label>
+            <button onClick={handleAddTempSale}>Add to Temp Sales</button>
+          </div>
+          <div className="temp-sales-list-inline">
+            <h2>Temporary Sales List</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Discount</th>
+                  <th>Sub Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tempSales.map((tempSale, index) => (
+                  <tr key={index}>
+                    <td>{customers.find(cust => cust._id === tempSale.customer)?.firstName} {customers.find(cust => cust._id === tempSale.customer)?.lastName}</td>
+                    <td>{inventory.find(item => item._id === tempSale.itemId)?.name}</td>
+                    <td>{tempSale.quantity}</td>
+                    <td>PHP {tempSale.price}.00</td>
+                    <td>PHP {tempSale.discount}.00</td>
+                    <td>PHP {tempSale.subTotal}.00</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button onClick={handleAddSale}>Add Sale</button>
+            {error && <p className="error-message">{error}</p>}
+          </div>
+        </div>
       </div>
       <div className="sales-list">
         <h2>Sales List</h2>
         <table>
           <thead>
             <tr>
+              <th>Customer</th>
               <th>Product</th>
               <th>Quantity</th>
               <th>Price</th>
-              <th>Customer</th>
               <th>Date</th>
             </tr>
           </thead>
           <tbody>
             {sales.map((sale, index) => (
               <tr key={index}>
+                <td>{sale.customer ? `${sale.customer.firstName} ${sale.customer.lastName}` : ''}</td>
                 <td>{sale.item ? sale.item.name : ''}</td>
                 <td>{sale.quantity}</td>
                 <td>PHP {sale.price}.00</td>
-                <td>{sale.customer}</td>
                 <td>{new Date(sale.date).toLocaleDateString()}</td>
               </tr>
             ))}
