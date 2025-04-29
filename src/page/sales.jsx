@@ -65,14 +65,26 @@ const SalesPage = () => {
       return;
     }
 
-    const subTotal = (price - discount) * quantity;
-    const newTempSale = { itemId: productInInventory._id, quantity, price, discount, subTotal, customer };
-    setTempSales([...tempSales, newTempSale]);
+    const discountAmount = (discount / 100) * price;
+    const subTotal = (price - discountAmount) * quantity;
+    const existingTempSaleIndex = tempSales.findIndex(tempSale => tempSale.itemId === productInInventory._id);
+
+    if (existingTempSaleIndex !== -1) {
+      const updatedTempSales = [...tempSales];
+      const existingTempSale = updatedTempSales[existingTempSaleIndex];
+      existingTempSale.quantity += quantity;
+      existingTempSale.subTotal += subTotal;
+      updatedTempSales[existingTempSaleIndex] = existingTempSale;
+      setTempSales(updatedTempSales);
+    } else {
+      const newTempSale = { itemId: productInInventory._id, quantity, price, discount, subTotal, customer };
+      setTempSales([...tempSales, newTempSale]);
+    }
+
     setProduct('');
     setQuantity(0);
     setPrice(0);
     setDiscount(0);
-    setCustomer('');
     setError('');
   };
 
@@ -176,16 +188,7 @@ const SalesPage = () => {
               />
             </label>
             <label>
-              Price:
-              <input
-                type="number"
-                placeholder="Price"
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value))}
-              />
-            </label>
-            <label>
-              Discount:
+              Discount (%):
               <input
                 type="number"
                 placeholder="Discount"
@@ -204,8 +207,6 @@ const SalesPage = () => {
                   <th>Product</th>
                   <th>Quantity</th>
                   <th>Price</th>
-                  <th>Discount</th>
-                  <th>Sub Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -215,10 +216,16 @@ const SalesPage = () => {
                     <td>{inventory.find(item => item._id === tempSale.itemId)?.name}</td>
                     <td>{tempSale.quantity}</td>
                     <td>PHP {tempSale.price}.00</td>
-                    <td>PHP {tempSale.discount}.00</td>
-                    <td>PHP {tempSale.subTotal}.00</td>
                   </tr>
                 ))}
+                <tr>
+                  <td colSpan="3">Total Discount</td>
+                  <td>{tempSales.reduce((acc, tempSale) => acc + (tempSale.discount / 100) * tempSale.price * tempSale.quantity, 0).toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td colSpan="3">Total Sub Total</td>
+                  <td>{tempSales.reduce((acc, tempSale) => acc + tempSale.subTotal, 0).toFixed(2)}</td>
+                </tr>
               </tbody>
             </table>
             <button onClick={handleAddSale}>Add Sale</button>
