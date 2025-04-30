@@ -89,33 +89,18 @@ const SalesPage = () => {
   };
 
   const handleAddSale = () => {
-    tempSales.forEach(tempSale => {
+    const salesToAdd = tempSales.map(tempSale => {
       const productInInventory = inventory.find(item => item._id === tempSale.itemId);
 
       if (!productInInventory) {
         setError('Product not found in inventory.');
-        return;
+        return null;
       }
 
       if (productInInventory.quantity < tempSale.quantity) {
         setError('Insufficient quantity in inventory.');
-        return;
+        return null;
       }
-
-      // Add sale to the sales model on the server
-      fetch(apiUrl + 'sales', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(tempSale),
-      })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Sale added:', data);
-          setSales([...sales, data]);
-        })
-        .catch(error => console.error('Error adding sale:', error));
 
       // Update inventory
       const updatedInventory = inventory.map(item =>
@@ -139,6 +124,30 @@ const SalesPage = () => {
       })
         .then(response => response.json())
         .catch(error => console.error('Error updating inventory:', error));
+
+      return tempSale;
+    }).filter(sale => sale !== null);
+
+    // Add all valid sales to the sales model on the server
+    Promise.all(salesToAdd.map(sale =>
+      fetch(apiUrl + 'sales', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(sale),
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Sale added:', data);
+          return data;
+        })
+        .catch(error => {
+          console.error('Error adding sale:', error);
+          return null;
+        })
+    )).then(newSales => {
+      setSales([...sales, ...newSales.filter(sale => sale !== null)]);
     });
 
     setTempSales([]);
